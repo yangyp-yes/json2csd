@@ -1,0 +1,21 @@
+{
+  "name": "json2csd",
+  "version": "1.0.0",
+  "description": "cocos studio json to csd",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "run": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitee.com:ooomyself/json2csd.git"
+  },
+  "author": "wyl",
+  "license": "ISC",
+  "dependencies": {
+    "glob": "^7.1.2"
+  }
+}
