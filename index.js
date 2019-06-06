@@ -1,6 +1,8 @@
-const json2Csd = require('./lib/jsonToCsb.js');
+const json2Csd = require('./lib/jsonToCsd.js');
 const path = require('path');
 const glob = require('glob');
+const fs = require('fs');
+
 const DEST_STR = "./Output";
 const SRC = "./src/**/[^~$]*.json";
 
@@ -15,13 +17,13 @@ let commands = {
     },
     "--export": {
         "alias": ["-e"],
-        "desc": "export json to csb. --export [files]",
+        "desc": "export json to csd. --export [files]",
         "action": exportJson,
         "default": true
     },
     "--exOne": {
         "alias": ["-eo"],
-        "desc": "export a json to csb. --export [files]",
+        "desc": "export a json to csd. --export [files]",
         "action": exportJson,
     }
 };
@@ -51,6 +53,38 @@ parsed_cmds.forEach(function (e) {
     exec(e);
 });
 
+var copyFile = function (srcPath, tarPath) {
+    var dirname = path.dirname(tarPath);
+    if (!fs.existsSync(dirname)) {
+        fs.mkdirSync(dirname);
+    }
+    console.log('-----------')
+    console.log(tarPath);
+    console.log(srcPath);
+    console.log('-----------')
+
+    fs.writeFileSync(tarPath, fs.readFileSync(srcPath));
+}
+
+function moveRes() {
+    glob('src/**/*', function (err, files) {
+        if (err) {
+            console.error("exportJson error:", err);
+            throw err;
+        }
+        files.forEach(function (element, index, array) {
+            console.log(element);
+            const filename = path.join(__dirname, element);
+            if (!isDirectory(filename)) {
+                if (filename.indexOf('.json') > -1) {
+                } else {
+                    const outFile = filename.replace(__dirname + '/src', __dirname + '/output');
+                    copyFile(filename, outFile)
+                }
+            }
+        });
+    });
+};
 
 /**
  * export json
@@ -58,15 +92,24 @@ parsed_cmds.forEach(function (e) {
  */
 function exportJson(args) {
     if (typeof args === 'undefined' || args.length === 0) {
+        // TODO 将资源（除了.json)移动到发布路径
+
+        moveRes();
+
         glob(SRC, function (err, files) {
             if (err) {
                 console.error("exportJson error:", err);
                 throw err;
             }
             files.forEach(function (element, index, array) {
-                json2Csd.ConvertIng(path.join(__dirname, element), path.join(__dirname, DEST_STR))
-            });
+                const filename = path.join(__dirname, element);
 
+                if(!isDirectory(filename)){
+                    const outFile = filename.replace(__dirname + '/src', __dirname + '/output');
+
+                    json2Csd.ConvertIng(filename, outFile);
+                }
+            });
         });
     } else {
         if (args instanceof Array) { // Array的实例对象
@@ -82,6 +125,10 @@ function exportJson(args) {
             json2Csd.ConvertIng(args, path.join(__dirname, DEST_STR))
         }
     }
+}
+
+function isDirectory(path) {
+    return fs.lstatSync(path).isDirectory()
 }
 
 /**
