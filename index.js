@@ -54,18 +54,34 @@ parsed_cmds.forEach(function (e) {
 });
 
 var copyFile = function (srcPath, tarPath) {
-    var dirname = path.dirname(tarPath);
-    if (!fs.existsSync(dirname)) {
-        fs.mkdirSync(dirname);
-    }
-    console.log('-----------')
+    console.log('copyFile:----------- begin')
     console.log(tarPath);
     console.log(srcPath);
     console.log('-----------')
+    var dirname = path.dirname(tarPath);
+    console.log("test:",dirname);
+
+    if (!fs.existsSync(dirname)) {
+        console.log("fs.mkdirSync:",dirname);
+
+        mkdirsSync(dirname);
+    }
+
 
     fs.writeFileSync(tarPath, fs.readFileSync(srcPath));
 }
-
+//递归创建目录 同步方法
+function mkdirsSync(dirname) {
+    console.log("mkdirsSync:",dirname);
+    if (fs.existsSync(dirname)) {
+        return true;
+    } else {
+        if (mkdirsSync(path.dirname(dirname))) {
+            fs.mkdirSync(dirname);
+            return true;
+        }
+    }
+}
 function moveRes() {
     glob('src/**/*', function (err, files) {
         if (err) {
@@ -73,12 +89,15 @@ function moveRes() {
             throw err;
         }
         files.forEach(function (element, index, array) {
-            console.log(element);
             const filename = path.join(__dirname, element);
+            console.log("filename:",filename);
+
             if (!isDirectory(filename)) {
                 if (filename.indexOf('.json') > -1) {
+                    console.log("filename::;;;;;",filename)
                 } else {
                     const outFile = filename.replace(__dirname + '/src', __dirname + '/output');
+
                     copyFile(filename, outFile)
                 }
             }
